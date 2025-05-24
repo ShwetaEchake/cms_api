@@ -37,15 +37,12 @@ class ArticleController extends Controller
 
             $data['author_id'] = Auth::id();
 
-            // Create article without slug and summary
             $article = Article::create($data);
 
-            // Attach categories if any
             if (!empty($data['category_ids'])) {
                 $article->categories()->sync($data['category_ids']);
             }
 
-            // Dispatch jobs for slug and summary generation
             GenerateArticleSlug::dispatch($article);
             GenerateArticleSummary::dispatch($article);
 
@@ -59,15 +56,12 @@ class ArticleController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            // Find the article, or fail with 404
             $article = Article::findOrFail($id);
 
-            // Optional: Check if current user is the author or admin (if needed)
             if (auth()->id() !== $article->author_id && auth()->user()->role !== 'admin') {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            // Validate incoming data (all fields optional for update)
             $data = $request->validate([
                 'title' => 'sometimes|required|string',
                 'content' => 'sometimes|required|string',
@@ -77,15 +71,12 @@ class ArticleController extends Controller
                 'published_at' => 'nullable|date',
             ]);
 
-            // Update article data
             $article->update($data);
 
-            // Sync categories if provided
             if (isset($data['category_ids'])) {
                 $article->categories()->sync($data['category_ids']);
             }
 
-            // Dispatch async jobs if title or content updated (slug and summary depend on these)
             if (isset($data['title']) || isset($data['content'])) {
                 GenerateArticleSlug::dispatch($article);
                 GenerateArticleSummary::dispatch($article);

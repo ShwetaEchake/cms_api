@@ -1,6 +1,5 @@
 <?php
 
-// app/Jobs/GenerateArticleSlug.php
 namespace App\Jobs;
 
 use App\Models\Article;
@@ -20,11 +19,10 @@ class GenerateArticleSlug implements ShouldQueue {
         $this->article = $article;
     }
 
-    public function handle() {
-        // Simulate LLM slug generation:
+    public function handle()
+    {
         $baseSlug = Str::slug($this->article->title);
 
-        // Ensure uniqueness
         $slug = $baseSlug;
         $count = 1;
         while (Article::where('slug', $slug)->where('id', '!=', $this->article->id)->exists()) {

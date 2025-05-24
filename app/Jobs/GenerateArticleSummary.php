@@ -1,6 +1,5 @@
 <?php
 
-// app/Jobs/GenerateArticleSummary.php
 namespace App\Jobs;
 
 use App\Models\Article;
@@ -19,11 +18,10 @@ class GenerateArticleSummary implements ShouldQueue {
         $this->article = $article;
     }
 
-    public function handle() {
-        // Simulate summary generation (replace with LLM API call)
+    public function handle()
+    {
         $content = $this->article->content;
 
-        // Dummy summary: first 150 chars + ...
         $summary = substr($content, 0, 150) . (strlen($content) > 150 ? '...' : '');
 
         $this->article->summary = $summary;
