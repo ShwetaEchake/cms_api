@@ -118,7 +118,7 @@ class ArticleController extends Controller
         if ($request->filled('categories')) {
             $categories = $request->input('categories');
             $query->whereHas('categories', function($q) use ($categories) {
-                $q->whereIn('categories.id', $categories);  // or use slug if needed
+                $q->whereIn('categories.id', $categories);
             });
         }
 
