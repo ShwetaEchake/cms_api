@@ -33,47 +33,107 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->validate([
+            $validated = $request->validate([
                 'name' => 'required|string|unique:categories,name',
             ]);
 
-             $category = Category::create($data);
-
-             return response()->json([
-                    'message' => 'Category added successfully',
-                    'category' => $category
-                ],201);
-
-        } catch (\Exception $th) {
-            return response()->json(['error' => $th->getMessage()],403);
-        }
-    }
-
-    public function show(Category $category)
-    {
-        return $category;
-    }
-
-    public function update(Request $request, Category $category)
-    {
-         try {
-            $data = $request->validate([
-                'name' => 'required|string|unique:categories,name,' . $category->id,
+            $category = Category::create([
+                'name' => $validated['name'],
             ]);
-            $category->update($data);
 
-             return response()->json([
-                'message' => 'Category updated successfully',
-                'category' => $category
-            ], 200);
+            return response()->json([
+                'response_code' => 201,
+                'status'        => 'success',
+                'message'       => 'Category created successfully',
+                'data'          => $category,
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'response_code' => 422,
+                'status'        => 'error',
+                'message'       => 'Validation failed',
+                'errors'        => $e->errors(),
+            ], 422);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Category Create Error: ' . $e->getMessage());
+
+            return response()->json([
+                'response_code' => 500,
+                'status'        => 'error',
+                'message'       => 'Failed to create category',
+            ], 500);
         }
     }
 
-    public function destroy(Category $category)
+    public function show($id)
     {
         try {
+            $category = Category::findOrFail($id);
+
+            return response()->json([
+                'response_code' => 200,
+                'status'        => 'success',
+                'message'       => 'Category fetched successfully',
+                'data'          => $category,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'response_code' => 404,
+                'status'        => 'error',
+                'message'       => 'Category not found',
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Category Fetch Error: ' . $e->getMessage());
+
+            return response()->json([
+                'response_code' => 500,
+                'status'        => 'error',
+                'message'       => 'Failed to fetch category',
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+
+        try {
+            $request->validate([
+                'name' => 'required|string|unique:categories,name,' . $id,
+            ]);
+            $category = Category::findOrFail($id);
+            $category->update([
+                'name' => $request->name,
+            ]);
+
+            return response()->json([
+                'response_code' => 200,
+                'status'        => 'success',
+                'message'       => 'Category updated successfully',
+                'data'          => $category,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'response_code' => 404,
+                'status'        => 'error',
+                'message'       => 'Category not found',
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Category Update Error: ' . $e->getMessage());
+
+            return response()->json([
+                'response_code' => 500,
+                'status'        => 'error',
+                'message'       => 'Failed to update category',
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $category = Category::findOrFail($id);
             $category->delete();
 
             return response()->json([
