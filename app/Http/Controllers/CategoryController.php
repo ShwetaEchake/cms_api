@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CategoryController extends Controller
 {
@@ -97,14 +100,14 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-
         try {
-            $request->validate([
+            $validated = $request->validate([
                 'name' => 'required|string|unique:categories,name,' . $id,
             ]);
+
             $category = Category::findOrFail($id);
             $category->update([
-                'name' => $request->name,
+                'name' => $validated['name'],
             ]);
 
             return response()->json([
@@ -113,12 +116,22 @@ class CategoryController extends Controller
                 'message'       => 'Category updated successfully',
                 'data'          => $category,
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'response_code' => 422,
+                'status'        => 'error',
+                'message'       => 'Validation failed',
+                'errors'        => $e->errors(),
+            ], 422);
+
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'response_code' => 404,
                 'status'        => 'error',
                 'message'       => 'Category not found',
             ], 404);
+
         } catch (\Exception $e) {
             Log::error('Category Update Error: ' . $e->getMessage());
 
