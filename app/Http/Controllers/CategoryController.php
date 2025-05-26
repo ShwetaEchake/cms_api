@@ -7,30 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Controllers\API\BaseController;
 
-class CategoryController extends Controller
+
+class CategoryController extends BaseController
 {
 
     public function index()
     {
-        try {
-            $categories = Category::latest()->paginate(10);
+        $categories = Category::latest()->get();
 
-            return response()->json([
-                'response_code' => 200,
-                'status'        => 'success',
-                'message'       => 'Fetched category list successfully',
-                'data'          => $categories,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Category List Error: ' . $e->getMessage());
-
-            return response()->json([
-                'response_code' => 500,
-                'status'        => 'error',
-                'message'       => 'Failed to fetch category list',
-            ], 500);
-        }
+        return $this->sendResponse($data,'Fetched category list successfully');
     }
 
     public function store(Request $request)
