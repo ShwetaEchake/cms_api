@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Controllers\API\BaseController;
+use App\Http\Controllers\API\BaseController;
 
 
 class CategoryController extends BaseController
@@ -15,7 +15,7 @@ class CategoryController extends BaseController
 
     public function index()
     {
-        $categories = Category::latest()->get();
+        $data = Category::latest()->get();
 
         return $this->sendResponse($data,'Fetched category list successfully');
     }
